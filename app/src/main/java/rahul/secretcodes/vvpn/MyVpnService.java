@@ -11,8 +11,8 @@ import android.os.ParcelFileDescriptor;
 
 public class MyVpnService extends VpnService {
     private static final String CHANNEL_ID = "dns_changer_service_channel";
-    private static final String DNS_SERVER_1 = "64.225.87.133";
-    private static final String DNS_SERVER_2 = "64.225.87.133";
+    private static final String DNS_SERVER_1 = "157.245.97.90";
+    private static final String DNS_SERVER_2 = "157.245.97.90";
 
     private ParcelFileDescriptor vpnInterface;
 
