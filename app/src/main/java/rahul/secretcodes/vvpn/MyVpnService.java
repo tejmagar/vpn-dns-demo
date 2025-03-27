@@ -1,5 +1,7 @@
 package rahul.secretcodes.vvpn;
 
+import static android.system.OsConstants.AF_INET;
+
 import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -9,10 +11,21 @@ import android.net.VpnService;
 import android.os.Build;
 import android.os.ParcelFileDescriptor;
 
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.lang.reflect.Field;
+import java.net.ProtocolFamily;
+import java.nio.ByteBuffer;
+
 public class MyVpnService extends VpnService {
     private static final String CHANNEL_ID = "dns_changer_service_channel";
-    private static final String DNS_SERVER_1 = "157.245.97.90";
-    private static final String DNS_SERVER_2 = "157.245.97.90";
+    private static final String DNS_SERVER_1 = "8.8.8.8";
+    private static final String DNS_SERVER_2 = "8.8.4.4";
 
     private ParcelFileDescriptor vpnInterface;
 
@@ -34,13 +47,24 @@ public class MyVpnService extends VpnService {
         // Configure the VPN interface
         try {
             Builder builder = new Builder();
-            builder.addAddress("10.0.0.1", 32);
+            builder.addAddress("10.0.0.1", 24);
             builder.addDnsServer(DNS_SERVER_1);
             builder.addDnsServer(DNS_SERVER_2);
-            builder.addRoute("10.0.0.1", 32);
+            builder.addRoute("103.94.159.74", 32);
+            builder.allowFamily(AF_INET);
 
             // Establish the VPN interface
             vpnInterface = builder.setSession("DnsChangerSession").establish();
+
+            new Thread(() -> {
+                try {
+                    FileDescriptor fileDescriptor = vpnInterface.getFileDescriptor();
+                    Stream stream = new Stream(fileDescriptor);
+                    RustBridge.process(stream);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }).start();
         } catch (Exception e) {
             e.printStackTrace();
             stopSelf();
